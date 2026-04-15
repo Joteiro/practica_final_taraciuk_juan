@@ -1,0 +1,12 @@
+Método utilizado: IQR (1.5 * IQR)
+
+year_of_selection: 0 outliers (0.00%)
+mission_number: 2 outliers (0.16%)
+total_number_of_missions: 0 outliers (0.00%)
+year_of_mission: 0 outliers (0.00%)
+hours_mission: 278 outliers (21.77%)
+total_hrs_sum: 101 outliers (7.91%)
+eva_hrs_mission: 195 outliers (15.27%)
+total_eva_hrs: 45 outliers (3.52%)
+age: 9 outliers (0.70%)
+years_since_selection: 18 outliers (1.41%)

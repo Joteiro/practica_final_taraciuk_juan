@@ -82,11 +82,28 @@ La curtosis (4.316) indica una distribución leptocúrtica, con alta concentraci
 
 En conjunto, estos resultados muestran que hours_mission no sigue una distribución normal y presenta valores extremos que deberán ser considerados en el análisis posterior.
 
+### C) Distribuciones
+
+Las variables year_of_selection, year_of_mission y total_number_of_missions no presentan valores atípicos según el criterio IQR, lo que sugiere distribuciones relativamente estables y sin valores extremos.
+
+Esto indica que estas variables no requieren tratamiento específico en términos de outliers y pueden ser utilizadas directamente en el análisis posterior.
+
+En el gráfico de boxplots es interesante observar que hay países que tienen más valores extremos que otros (es lógico suponer que sus astronautas pasaron más tiempo en misiones que otros), como así hay ocupaciones que también tienen más horas de misión que otras: comandante, Mission Specialist (MSP) e ingeniero de vuelo lógicamente superan a turista espacial.
+
+### D) Variables categóricas
+
+En lo que respecta al género, hay una clara predominancia de hombres (88.8%) por sobre mujeres, lo cual es consistente con la historia de la exploración espacial.
+En otras variables como nationality o occupation, la distribución es más dispersa, aunque sigue habiendo ciertas categorías predominantes: EEUU domina el ranking de países con el 66.9% y MSP el de ocupaciones con el 39%. La proporción entre militares y civiles también es más pareja, sin embargo los primeros representan el 60.2%.
+
+### E) Correlaciones
+
+La variable objetivo "hours_mission" está muy correlacionada con "total_hrs_sum", ya que ésta un agregado de la primera (casi la misma información). 
+
 ---
 
 **Pregunta 1.1** — ¿De qué fuente proviene el dataset y cuál es la variable objetivo (target)? ¿Por qué tiene sentido hacer regresión sobre ella?
 
-> El dataset proviene de la iniciativa pública TidyTuesday (repositorio de datos abiertos en GitHub), concretamente del conjunto de datos sobre astronautas publicado en julio de 2020:
+El dataset proviene de la iniciativa pública TidyTuesday (repositorio de datos abiertos en GitHub), concretamente del conjunto de datos sobre astronautas publicado en julio de 2020:
 
 https://github.com/rfordatascience/tidytuesday/blob/main/data/2020/2020-07-14/astronauts.csv
 
@@ -102,15 +119,40 @@ Por lo tanto, se trata de una variable adecuada para estudiar relaciones cuantit
 
 **Pregunta 1.2** — ¿Qué distribución tienen las principales variables numéricas y has encontrado outliers? Indica en qué variables y qué has decidido hacer con ellos.
 
-> _Escribe aquí tu respuesta_
+Las variables numéricas del dataset presentan en su mayoría distribuciones asimétricas, especialmente aquellas relacionadas con la duración y acumulación de actividad espacial.
+
+En particular, variables como hours_mission, total_hrs_sum, eva_hrs_mission y total_eva_hrs muestran distribuciones fuertemente sesgadas a la derecha, lo cual indica la presencia de valores extremos altos en un pequeño número de observaciones. Esto es consistente con la naturaleza del fenómeno, donde algunas misiones presentan duraciones significativamente mayores que el resto.
+
+En contraste, variables temporales como year_of_mission y year_of_selection presentan distribuciones más simétricas y estables, sin evidencia de outliers según el criterio IQR.
+
+Respecto a los outliers detectados mediante el método IQR (1.5×IQR), se observa que:
+
+- hours_mission presenta un 21.77% de outliers
+- eva_hrs_mission presenta un 15.27% de outliers
+- total_hrs_sum presenta un 7.91% de outliers
+- total_eva_hrs presenta un 3.52% de outliers
+
+El resto de variables presenta proporciones marginales o nulas.
+
+Dado el contexto del dataset, estos outliers no se consideran errores de medición, sino parte estructural de la variabilidad del dominio (misiones de distinta duración y complejidad). Por este motivo, no se ha aplicado eliminación de outliers, ya que podría eliminar información relevante del fenómeno analizado.
 
 **Pregunta 1.3** — ¿Qué tres variables numéricas tienen mayor correlación (en valor absoluto) con la variable objetivo? Indica los coeficientes.
 
-> _Escribe aquí tu respuesta_
+Las tres variables numéricas con mayor correlación en valor absoluto con la variable objetivo hours_mission son las siguientes:
+
+1. total_hrs_sum → r = 0.7029
+2. year_of_mission → r = 0.3771
+3. eva_hrs_mission → r = 0.3814
+
+Estas correlaciones indican que la duración de la misión está fuertemente asociada con la experiencia acumulada del astronauta (total_hrs_sum), lo cual es coherente con la intuición del problema.
+
+Asimismo, se observa una relación moderada con variables temporales como year_of_mission, lo que sugiere un efecto de evolución histórica en la duración de las misiones espaciales (misiones más recientes tienden a tener perfiles distintos).
+
+Finalmente, la variable eva_hrs_mission también presenta una correlación moderada, lo que indica que las actividades extravehiculares están parcialmente asociadas a misiones de mayor duración.
 
 **Pregunta 1.4** — ¿Hay valores nulos en el dataset? ¿Qué porcentaje representan y cómo los has tratado?
 
-> Sí, hay valores nulos en el dataset pero representan menos del 1%. Como ni siquiera son variables numéricas, o categóricas que se vayan a usar, se mantienen como están. 
+Sí, hay valores nulos en el dataset pero representan menos del 1%. Como ni siquiera son variables numéricas, o categóricas que se vayan a usar, se mantienen como están. 
 
 ---
 

@@ -17,6 +17,44 @@ def load_data(path):
     """
     return pd.read_csv(path)
 
+def preprocess_df(df):
+    """
+    Limpieza y feature engineering del dataset.
+    """
+
+    df = df.copy()
+
+    # ---------------------------
+    # Feature engineering
+    # ---------------------------
+    df["age"] = df["year_of_mission"] - df["year_of_birth"]
+    df["years_since_selection"] = df["year_of_mission"] - df["year_of_selection"]
+
+    # ---------------------------
+    # Drop columnas irrelevantes
+    # ---------------------------
+    cols_to_drop = [
+        "id",
+        "name",
+        "original_name",
+        "number",
+        "nationwide_number",
+        "field21",
+        "year_of_birth"
+    ]
+
+    df = df.drop(columns=cols_to_drop)
+
+    # ---------------------------
+    # Limpieza occupation
+    # --------------------------
+    df["occupation"] = df["occupation"].str.strip().str.lower()
+
+    df["occupation"] = df["occupation"].replace({
+        "other (space tourist)": "space tourist"
+    })
+
+    return df
 
 def structural_summary(df):
     """
@@ -91,32 +129,6 @@ def numerical_summary(df):
     dict: información de outliers para hours_mission
     """
 
-    df = df.copy()  # 🔒 evita modificar el original
-
-    # ---------------------------
-    # Feature engineering
-    # ---------------------------
-    df["age"] = df["year_of_mission"] - df["year_of_birth"]
-    df["years_since_selection"] = df["year_of_mission"] - df["year_of_selection"]
-
-    # ---------------------------
-    # Columnas a eliminar
-    # ---------------------------
-    cols_to_drop = [
-        "id",
-        "name",
-        "original_name",
-        "number",
-        "nationwide_number",
-        "field21",
-        "year_of_birth"
-    ]
-
-    df = df.drop(columns=cols_to_drop)
-
-    # ---------------------------
-    # Variables numéricas
-    # ---------------------------
     num_df = df.select_dtypes(include=[np.number])
 
     # ---------------------------
@@ -179,10 +191,10 @@ def plot_boxplots(df, target, cat_cols, output_path):
     for i, col in enumerate(cat_cols):
         plt.subplot((n // 2) + 1, 2, i + 1)
         sns.boxplot(data=df, x=col, y=target)
-        plt.xticks(rotation=45)
+        plt.xticks(rotation=90)
+        plt.tight_layout()
         plt.title(f"{target} vs {col}")
 
-    plt.tight_layout()
     plt.savefig(output_path)
     plt.close()
 
@@ -201,8 +213,145 @@ def detect_outliers_iqr(df, col):
 
     return stats
 
+def summarize_outliers(df):
+    """
+    Calcula número de outliers por variable numérica usando IQR.
+
+    Returns:
+    dict: {columna: nº de outliers}
+    """
+    num_df = df.select_dtypes(include=[np.number])
+
+    results = {}
+
+    for col in num_df.columns:
+        stats = detect_outliers_iqr(num_df, col)
+        results[col] = stats["n_outliers"]
+
+    return results
+
+def categorical_analysis(df, output_path, top_n=10):
+    """
+    Genera análisis de variables categóricas:
+    - Frecuencia absoluta y relativa
+    - Gráficos de barras (top N categorías)
+
+    Parameters:
+    df (pd.DataFrame): Dataset ya preprocesado
+    output_path (str): Ruta de guardado
+    top_n (int): número de categorías a mostrar
+    """
+
+    cat_cols = df.select_dtypes(include=["object", "string"]).columns
+
+    n = len(cat_cols)
+
+    plt.figure(figsize=(18, 5 * n))
+
+    results = {}
+
+    for i, col in enumerate(cat_cols):
+
+        # ---------------------------
+        # Frecuencias
+        # ---------------------------
+        freq_abs = df[col].value_counts()
+        freq_rel = df[col].value_counts(normalize=True) * 100
+
+        summary = pd.DataFrame({
+            "count": freq_abs,
+            "percentage": freq_rel
+        })
+
+        results[col] = summary
+
+        # ---------------------------
+        # Top N para graficar
+        # ---------------------------
+        top_data = summary.head(top_n)
+
+        # ---------------------------
+        # Plot
+        # ---------------------------
+        plt.subplot(n, 1, i + 1)
+
+        labels = [
+            f"{cat} ({pct:.1f}%)"
+            for cat, pct in zip(top_data.index, top_data["percentage"])
+        ]
+
+        sns.barplot(
+            x=labels,
+            y=top_data["count"]
+        )
+
+        plt.title(f"{col}")
+        plt.xticks(rotation=45)
+
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.close()
+
+    return results
+
+def plot_correlation_heatmap(df, output_path):
+    """
+    Genera heatmap de correlaciones (Pearson) para variables numéricas.
+    """
+
+    num_df = df.select_dtypes(include=[np.number])
+
+    corr = num_df.corr(method="pearson")
+
+    plt.figure(figsize=(12, 10))
+
+    sns.heatmap(
+        corr,
+        annot=True,
+        fmt=".2f",
+        cmap="coolwarm",
+        center=0
+    )
+
+    plt.title("Matriz de correlación (Pearson)")
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.close()
+
+    return corr
+
+def get_top_correlations(corr_matrix, target, n=3):
+    """
+    Obtiene las variables más correlacionadas con el target.
+    """
+
+    target_corr = corr_matrix[target].drop(target)
+
+    top_corr = target_corr.abs().sort_values(ascending=False).head(n)
+
+    return top_corr
+
+def detect_multicollinearity(corr_matrix, threshold=0.9):
+    """
+    Detecta pares de variables altamente correlacionadas.
+    """
+
+    pairs = []
+
+    cols = corr_matrix.columns
+
+    for i in range(len(cols)):
+        for j in range(i + 1, len(cols)):
+            val = corr_matrix.iloc[i, j]
+
+            if abs(val) > threshold:
+                pairs.append((cols[i], cols[j], val))
+
+    return pairs
 
 if __name__ == "__main__":
+    
+    # 1. Cargar datos
     df = load_data("data/astronauts.csv")
 
     summary = structural_summary(df)
@@ -213,38 +362,62 @@ if __name__ == "__main__":
     print("\nTipos de datos:\n", summary["dtypes"])
     print("\nValores nulos:\n", summary["nulls"])
 
-    df = pd.read_csv("data/astronauts.csv")
+    # 2. Preprocesar UNA vez
+    df_clean = preprocess_df(df)
 
+    # 3. Estadísticos
     desc, target_metrics = numerical_summary(df)
 
-    # Guardar output requerido
     desc.to_csv("output/ej1_descriptivo.csv", float_format="%.3f")
 
-    # ---------------------------
-    # Histogramas
-    # ---------------------------
-    plot_histograms(
-        df,
-        output_path="output/ej1_histogramas.png"
-    )
+    # 4. Histogramas
+    plot_histograms(df_clean, "output/ej1_histogramas.png")
 
-    # ---------------------------
-    # Boxplots (target vs categóricas)
-    # ---------------------------
-
+    # 5. Boxplots
     target = "hours_mission"
 
-    categorical_cols = df.select_dtypes(include=["object"]).columns.tolist()
+    categorical_cols = df_clean.select_dtypes(include=["object", "string"]).columns.tolist()
 
-    # opcional: limpiar categóricas irrelevantes
     categorical_cols = [
         col for col in categorical_cols
-        if df[col].nunique() < 50  # evita variables tipo nombre
+        if df_clean[col].nunique() < 50
     ]
 
-    plot_boxplots(
-        df,
-        target=target,
-        cat_cols=categorical_cols,
-        output_path="output/ej1_boxplots.png"
+    plot_boxplots(df_clean, target, categorical_cols, "output/ej1_boxplots.png")
+
+    # 6. Outliers
+    outliers_summary = summarize_outliers(df_clean)
+
+    with open("output/ej1_outliers.txt", "w") as f:
+        f.write("Método utilizado: IQR (1.5 * IQR)\n\n")
+
+        total = len(df_clean)
+
+        for col, n in outliers_summary.items():
+            pct = (n / total) * 100
+            f.write(f"{col}: {n} outliers ({pct:.2f}%)\n")
+
+    # 7. Variables categóricas
+    cat_results = categorical_analysis(
+        df_clean,
+        output_path="output/ej1_categoricas.png"
     )
+
+# 8. Correlaciones
+
+corr_matrix = plot_correlation_heatmap(
+    df_clean,
+    output_path="output/ej1_heatmap_correlacion.png"
+)
+
+# Top 3 variables correlacionadas con el target
+top_corr = get_top_correlations(corr_matrix, target="hours_mission")
+
+print("\nTop correlaciones con hours_mission:\n", top_corr)
+
+# Multicolinealidad
+high_corr_pairs = detect_multicollinearity(corr_matrix)
+
+print("\nPares con alta correlación (>0.9):")
+for pair in high_corr_pairs:
+    print(pair)
