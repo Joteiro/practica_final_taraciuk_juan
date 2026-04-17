@@ -97,7 +97,7 @@ En otras variables como nationality o occupation, la distribución es más dispe
 
 ### E) Correlaciones
 
-La variable objetivo "hours_mission" está muy correlacionada con "total_hrs_sum", ya que ésta un agregado de la primera (casi la misma información). 
+La variable objetivo "hours_mission" está muy correlacionada con "total_hrs_sum", ya que ésta un agregado de la primera (casi la misma información). De todas formas, no la descartamos por multicolinealidad porque su |r| es de 0.7 (menor al umbral de 0.9).
 
 ---
 
@@ -159,7 +159,11 @@ Sí, hay valores nulos en el dataset pero representan menos del 1%. Como ni siqu
 ## Ejercicio 2 — Inferencia con Scikit-Learn
 
 ---
-Añade aqui tu descripción y analisis:
+Las variables categóricas fueron transformadas mediante One-Hot Encoding, generando variables binarias para cada categoría. Esta técnica fue elegida debido a que las variables categóricas del dataset no presentan un orden natural, por lo que métodos como Label Encoding podrían introducir relaciones artificiales entre categorías.
+
+El uso de One-Hot Encoding permite que el modelo trate cada categoría de manera independiente, mejorando tanto la capacidad predictiva como la interpretabilidad de los coeficientes en la regresión lineal.
+
+Se aplicó StandardScaler para escalar las variables numéricas, transformándolas a una distribución con media 0 y desviación estándar 1. Esta técnica fue elegida en lugar de MinMaxScaler debido a la presencia de outliers en varias variables, ya que el escalado estándar es más robusto frente a valores extremos y permite preservar mejor la estructura de los datos.
 
 ---
 
