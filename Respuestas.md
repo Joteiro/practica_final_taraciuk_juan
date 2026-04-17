@@ -165,12 +165,25 @@ El uso de One-Hot Encoding permite que el modelo trate cada categoría de manera
 
 Se aplicó StandardScaler para escalar las variables numéricas, transformándolas a una distribución con media 0 y desviación estándar 1. Esta técnica fue elegida en lugar de MinMaxScaler debido a la presencia de outliers en varias variables, ya que el escalado estándar es más robusto frente a valores extremos y permite preservar mejor la estructura de los datos.
 
+El modelo de regresión lineal fue entrenado tras un proceso de limpieza y selección de variables en el cual se eliminaron aquellas que no aportaban valor o que podían introducir redundancia con el target, en particular total_hrs_sum, ya que representa una agregación directamente relacionada con la duración total de las misiones.
+
+El rol en la misión es el principal determinante de horas. Las misiones más recientes tienden a tener mayor duración, lo que refleja la evolución tecnológica y operativa de los programas espaciales. Asimismo, una mayor experiencia acumulada desde la selección también se asocia con misiones más largas. Existen diferencias estructurales entre programas espaciales de distintos países, lo que refleja factores organizacionales e históricos más que características individuales. También se observan diferencias estructurales entre programas espaciales de distintos países, lo que refleja factores organizacionales e históricos más que características individuales.
+
+Si miramos el gráfico de residuos, observamos que el modelo genera algunas predicciones negativas para la variable objetivo, lo cual no es consistente con la naturaleza del problema, ya que dicha variable solo puede tomar valores positivos.
+Este comportamiento se debe a que la regresión lineal no impone restricciones sobre el rango de salida, pudiendo generar valores en todo el dominio de los números reales. Esto evidencia una limitación del modelo en contextos donde la variable objetivo tiene restricciones naturales.
+Una posible solución sería aplicar una transformación sobre la variable objetivo (por ejemplo, logarítmica) o utilizar modelos que respeten estas restricciones, como hicimos con la regresión logística.
+
+Notamos que la transformación del problema (de regresión a clasificación) puede mejorar el rendimiento predictivo, pero a costa de perder información granular sobre la variable objetivo.
+
 ---
 
 **Pregunta 2.1** — Indica los valores de MAE, RMSE y R² de la regresión lineal sobre el test set. ¿El modelo funciona bien? ¿Por qué?
 
-> _Escribe aquí tu respuesta_
+- MAE: 798.854
+- RMSE: 1167.064
+- R²: 0.556
 
+> El modelo presenta un coeficiente de determinación (R² = 0.556), lo que indica que explica aproximadamente un 56% de la variabilidad de la variable objetivo (hours_mission). Este valor puede considerarse moderado, especialmente teniendo en cuenta la naturaleza heterogénea del fenómeno analizado. El MAE de 798.85 indica que, en promedio, el modelo se desvía en aproximadamente 799 horas respecto al valor real, mientras que el RMSE de 1167.06 sugiere la existencia de errores grandes en algunos casos, penalizando más fuertemente las predicciones extremas. Esto es consistente con la alta dispersión y presencia de outliers en la variable objetivo, lo que impacta especialmente en el RMSE al penalizar más fuertemente los errores grandes.
 
 ---
 
