@@ -175,6 +175,12 @@ Una posible solución sería aplicar una transformación sobre la variable objet
 
 Notamos que la transformación del problema (de regresión a clasificación) puede mejorar el rendimiento predictivo, pero a costa de perder información granular sobre la variable objetivo.
 
+> Bonus (Interpretación de predicciones Artemis II)
+
+Aprovechando el hype por la reciente misión espacial, buscamos ver cómo nuestros modelos creados estimaban una misión con esas características. Encontramos que las predicciones muestran una alta variabilidad entre astronautas, con valores que oscilan entre aproximadamente 100 y 2500 horas. Esta dispersión refleja que el modelo está fuertemente influenciado por variables como la ocupación y el contexto histórico de la misión, lo que provoca sobreestimaciones en perfiles asociados a roles de mayor jerarquía en el dataset histórico. Esto evidencia una limitación del modelo al ser aplicado fuera del dominio original de datos (out-of-distribution problem).
+El modelo de clasificación asigna mayoritariamente la categoría “medio” (3 de 4 astronautas), lo que indica una mayor estabilidad frente a la variabilidad del problema continuo.
+Sin embargo, esta concordancia no implica una predicción precisa de la realidad de Artemis II, sino una consecuencia de la reducción de complejidad al discretizar la variable objetivo.
+
 ---
 
 **Pregunta 2.1** — Indica los valores de MAE, RMSE y R² de la regresión lineal sobre el test set. ¿El modelo funciona bien? ¿Por qué?

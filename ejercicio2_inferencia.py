@@ -71,7 +71,7 @@ def prepare_features(X):
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
-    return X_scaled, feature_names
+    return X_scaled, feature_names, scaler
 
 
 # =========================================================
@@ -232,6 +232,144 @@ def plot_confusion_matrix(y_test, y_pred, output_path):
     plt.close()
 
 
+def artemis_prediction(
+    lin_model,
+    log_model,
+    scaler_reg,
+    scaler_clf,
+    feature_names_reg,
+    feature_names_clf,
+    output_path
+):
+    """
+    Predicción Artemis II con scaling correcto
+    """
+
+    artemis_df = pd.DataFrame([
+        {
+            "year_of_mission": 2026,
+            "mission_number": 2,
+            "occupation": "commander",
+            "nationality": "U.S.",
+            "military_civilian": "military",
+            "eva_hrs_mission": 0,
+            "age": 50,
+            "years_since_selection": 2026 - 2009,
+            "sex": "male",
+            "astronaut": "Reid Wiseman"
+        },
+        {
+            "year_of_mission": 2026,
+            "mission_number": 2,
+            "occupation": "pilot",
+            "nationality": "U.S.",
+            "military_civilian": "military",
+            "eva_hrs_mission": 0,
+            "age": 50,
+            "years_since_selection": 2026 - 2013,
+            "sex": "male",
+            "astronaut": "Victor Glover"
+        },
+        {
+            "year_of_mission": 2026,
+            "mission_number": 2,
+            "occupation": "MSP",
+            "nationality": "U.S.",
+            "military_civilian": "civilian",
+            "eva_hrs_mission": 0,
+            "age": 47,
+            "years_since_selection": 2026 - 2013,
+            "sex": "female",
+            "astronaut": "Christina Koch"
+        },
+        {
+            "year_of_mission": 2026,
+            "mission_number": 1,
+            "occupation": "MSP",
+            "nationality": "Canada",
+            "military_civilian": "military",
+            "eva_hrs_mission": 0,
+            "age": 50,
+            "years_since_selection": 2026 - 2009,
+            "sex": "male",
+            "astronaut": "Jeremy Hansen"
+        }
+    ])
+
+    names = artemis_df["astronaut"]
+    X_base = artemis_df.drop(columns=["astronaut"])
+
+    # =========================================================
+    # 🔵 REGRESIÓN
+    # =========================================================
+    X_reg = pd.get_dummies(X_base, drop_first=True)
+
+    for col in feature_names_reg:
+        if col not in X_reg:
+            X_reg[col] = 0
+
+    X_reg = X_reg[feature_names_reg]
+
+    X_reg_scaled = scaler_reg.transform(X_reg)
+
+    pred_hours = lin_model.predict(X_reg_scaled)
+
+    # =========================================================
+    # 🟢 LOGÍSTICA
+    # =========================================================
+    X_clf = pd.get_dummies(X_base, drop_first=True)
+
+    for col in feature_names_clf:
+        if col not in X_clf:
+            X_clf[col] = 0
+
+    X_clf = X_clf[feature_names_clf]
+
+    X_clf_scaled = scaler_clf.transform(X_clf)
+
+    pred_class = log_model.predict(X_clf_scaled)
+
+    # =========================================================
+    # RESULTADOS
+    # =========================================================
+    results = pd.DataFrame({
+        "astronaut": names,
+        "predicted_hours": pred_hours,
+        "predicted_category": pred_class
+    })
+
+    # Guardar
+    with open(output_path, "w") as f:
+        f.write("Predicciones Artemis II\n")
+        f.write("========================\n\n")
+
+        for _, row in results.iterrows():
+            f.write(f"Astronauta: {row['astronaut']}\n")
+            f.write(f"  Horas estimadas: {row['predicted_hours']:.2f}\n")
+            f.write(f"  Categoría: {row['predicted_category']}\n\n")
+
+    return results
+
+def rebuild_scaler(X_raw, feature_names):
+    """
+    Reconstruye el scaler original a partir de los datos de entrenamiento
+    """
+
+    X = pd.get_dummies(X_raw, drop_first=True)
+
+    # Alinear columnas
+    for col in feature_names:
+        if col not in X:
+            X[col] = 0
+
+    X = X[feature_names]
+
+    scaler = StandardScaler()
+    scaler.fit(X)
+
+    return scaler
+
+
 # =========================================================
 # MAIN
 # =========================================================
@@ -252,7 +390,7 @@ if __name__ == "__main__":
     X_reg = df.drop(columns=["hours_mission"])
     y_reg = df["hours_mission"]
 
-    X_reg, feat_names = prepare_features(X_reg)
+    X_reg, feat_names_reg, scaler_reg = prepare_features(X_reg)
 
     X_train, X_test, y_train, y_test = split_data(X_reg, y_reg)
 
@@ -262,7 +400,7 @@ if __name__ == "__main__":
 
     save_regression_metrics(mae, rmse, r2, "output/ej2_metricas_regresion.txt")
     
-    plot_top_coefficients(lin_model, feat_names, "output/ej2_coeficientes.png")
+    plot_top_coefficients(lin_model, feat_names_reg, "output/ej2_coeficientes.png")
 
     plot_residuals(y_test, y_pred, "output/ej2_residuos.png")
 
@@ -274,9 +412,9 @@ if __name__ == "__main__":
     # =====================================================
 
     y_class = create_target_categories(df["hours_mission"])
-    X_clf = df.drop(columns=["hours_mission"])
 
-    X_clf, _ = prepare_features(X_clf)
+    X_clf = df.drop(columns=["hours_mission"])
+    X_clf, feat_names_clf, scaler_clf = prepare_features(X_clf)
 
     X_train, X_test, y_train, y_test = split_data(
         X_clf,
@@ -299,3 +437,20 @@ if __name__ == "__main__":
     print("\nREGRESIÓN LOGÍSTICA:")
     for k, v in metrics.items():
         print(f"{k}: {v:.4f}")
+
+    
+# ---------------------------
+# Predicción Artemis II
+# ---------------------------
+artemis_results = artemis_prediction(
+    lin_model,
+    log_model,
+    scaler_reg,
+    scaler_clf,
+    feat_names_reg,
+    feat_names_clf,
+    "output/ej2_artemis_predictions.txt"
+)
+
+print("\nPredicciones Artemis II:")
+print(artemis_results)

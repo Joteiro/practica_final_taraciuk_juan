@@ -1,0 +1,19 @@
+Predicciones Artemis II
+========================
+
+Astronauta: Reid Wiseman
+  Horas estimadas: 2508.01
+  Categoría: alto
+
+Astronauta: Victor Glover
+  Horas estimadas: 1915.08
+  Categoría: medio
+
+Astronauta: Christina Koch
+  Horas estimadas: 105.24
+  Categoría: medio
+
+Astronauta: Jeremy Hansen
+  Horas estimadas: 806.66
+  Categoría: medio
+
