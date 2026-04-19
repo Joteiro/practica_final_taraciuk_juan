@@ -39,6 +39,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import os
+from statsmodels.tsa.seasonal import seasonal_decompose
+from scipy.stats import jarque_bera, norm
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+
 
 # Crear carpeta de salida si no existe
 os.makedirs("output", exist_ok=True)
@@ -115,7 +119,16 @@ def visualizar_serie(serie):
     - Guarda con plt.savefig("output/ej4_serie_original.png", dpi=150, bbox_inches='tight')
     """
     # TODO: Implementa la visualización de la serie
-    pass
+    fig, ax = plt.subplots(figsize=(14, 4))
+    
+    ax.plot(serie.index, serie.values)
+    ax.set_title("Serie temporal completa")
+    ax.set_xlabel("Fecha")
+    ax.set_ylabel("Valor")
+    ax.grid(alpha=0.3)
+
+    plt.savefig("output/ej4_serie_original.png", dpi=150, bbox_inches='tight')
+    plt.close()
 
 
 # =============================================================================
@@ -145,10 +158,15 @@ def descomponer_serie(serie):
     - Guarda la figura con fig.savefig(...)
     """
     # TODO: Implementa la descomposición
-    # resultado = seasonal_decompose(...)
-    # fig = resultado.plot()
-    # ...
-    pass
+    resultado = seasonal_decompose(serie, model='additive', period=365)
+    
+    fig = resultado.plot()
+    fig.set_size_inches(12, 8)
+    
+    plt.savefig("output/ej4_descomposicion.png", dpi=150, bbox_inches='tight')
+    plt.close()
+    
+    return resultado
 
 
 # =============================================================================
@@ -187,27 +205,66 @@ def analizar_residuo(residuo):
         from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
     """
     # TODO: Limpia el residuo (elimina NaN al inicio/fin)
-    residuo_limpio = None  # ← residuo.dropna()
+    residuo_limpio = residuo.dropna()
 
     # TODO: Calcula estadísticos básicos
-    media    = None
-    std      = None
-    asimetria = None
-    curtosis  = None
+    media = residuo_limpio.mean()
+    std = residuo_limpio.std()
+    asimetria = residuo_limpio.skew()
+    curtosis = residuo_limpio.kurtosis()
 
-
+    # Jarque-Bera
+    jb_stat, jb_p = jarque_bera(residuo_limpio)
     # TODO: Test de estacionariedad (ADF)
-    # from statsmodels.tsa.stattools import adfuller
-    # resultado_adf = adfuller(residuo_limpio)
-    # p_adf = resultado_adf[1]
+    from statsmodels.tsa.stattools import adfuller
+    resultado_adf = adfuller(residuo_limpio)
+    adf_stat = resultado_adf[0]
+    p_adf = resultado_adf[1]
 
     # TODO: Gráfico ACF y PACF del residuo → output/ej4_acf_pacf.png
-    pass
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+
+    plot_acf(residuo_limpio, ax=axes[0], lags=50)
+    plot_pacf(residuo_limpio, ax=axes[1], lags=50)
+
+    plt.savefig("output/ej4_acf_pacf.png", dpi=150, bbox_inches='tight')
+    plt.close()
 
     # TODO: Histograma del residuo con curva normal superpuesta
     # → output/ej4_histograma_ruido.png
     # Pista: usa scipy.stats.norm.pdf para la curva teórica
-    pass
+    plt.figure(figsize=(8, 4))
+    
+    count, bins, _ = plt.hist(residuo_limpio, bins=30, density=True, alpha=0.6)
+
+    x = np.linspace(bins.min(), bins.max(), 100)
+    y = norm.pdf(x, loc=media, scale=std)
+
+    plt.plot(x, y)
+    plt.title("Histograma del residuo + Normal teórica")
+
+    plt.savefig("output/ej4_histograma_ruido.png", dpi=150, bbox_inches='tight')
+    plt.close()
+
+    # -------------------------
+    # Guardar análisis
+    # -------------------------
+    with open("output/ej4_analisis.txt", "w") as f:
+        f.write("ANÁLISIS DEL RESIDUO\n")
+        f.write("====================\n\n")
+
+        f.write(f"Media: {media:.4f}\n")
+        f.write(f"Std: {std:.4f}\n")
+        f.write(f"Asimetría: {asimetria:.4f}\n")
+        f.write(f"Curtosis: {curtosis:.4f}\n\n")
+
+        f.write("Test Jarque-Bera\n")
+        f.write(f"Estadístico: {jb_stat:.4f}\n")
+        f.write(f"p-value: {jb_p:.4f}\n\n")
+
+        f.write("Test ADF\n")
+        f.write(f"Estadístico: {adf_stat:.4f}\n")
+        f.write(f"p-value: {p_adf:.4f}\n")
 
 
 # =============================================================================

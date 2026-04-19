@@ -177,9 +177,8 @@ Notamos que la transformación del problema (de regresión a clasificación) pue
 
 > Bonus (Interpretación de predicciones Artemis II)
 
-Aprovechando el hype por la reciente misión espacial, buscamos ver cómo nuestros modelos creados estimaban una misión con esas características. Encontramos que las predicciones muestran una alta variabilidad entre astronautas, con valores que oscilan entre aproximadamente 100 y 2500 horas, mientras que la misión duró unas 240 horas (10 días). Esta dispersión refleja que el modelo está fuertemente influenciado por variables como la ocupación y el contexto histórico de la misión, lo que provoca sobreestimaciones en perfiles asociados a roles de mayor jerarquía en el dataset histórico. Esto evidencia una limitación del modelo al ser aplicado fuera del dominio original de datos (out-of-distribution problem).
+Aprovechando el hype por la reciente misión espacial, quisimos ver cómo nuestros modelos creados estimaban una misión con esas características. Encontramos que las predicciones muestran una alta variabilidad entre astronautas, con valores que oscilan entre aproximadamente 100 y 2500 horas, mientras que la misión duró unas 240 horas (10 días). Esta dispersión refleja que el modelo está fuertemente influenciado por variables como la ocupación y el contexto histórico de la misión, lo que provoca sobreestimaciones en perfiles asociados a roles de mayor jerarquía en el dataset histórico. Esto evidencia una limitación del modelo al ser aplicado fuera del dominio original de datos (out-of-distribution problem).
 El modelo de clasificación asigna mayoritariamente la categoría “medio” (3 de 4 astronautas), que sería el equivalente a una misión de entre 1 y 2 semanas, lo que indica una mayor estabilidad frente a la variabilidad del problema continuo.
-Sin embargo, esta concordancia no implica una predicción precisa de la realidad de Artemis II, sino una consecuencia de la reducción de complejidad al discretizar la variable objetivo.
 
 ---
 
@@ -189,20 +188,21 @@ Sin embargo, esta concordancia no implica una predicción precisa de la realidad
 - RMSE: 1167.064
 - R²: 0.556
 
-> El modelo presenta un coeficiente de determinación (R² = 0.556), lo que indica que explica aproximadamente un 56% de la variabilidad de la variable objetivo (hours_mission). Este valor puede considerarse moderado, especialmente teniendo en cuenta la naturaleza heterogénea del fenómeno analizado. El MAE de 798.85 indica que, en promedio, el modelo se desvía en aproximadamente 799 horas respecto al valor real, mientras que el RMSE de 1167.06 sugiere la existencia de errores grandes en algunos casos, penalizando más fuertemente las predicciones extremas. Esto es consistente con la alta dispersión y presencia de outliers en la variable objetivo, lo que impacta especialmente en el RMSE al penalizar más fuertemente los errores grandes.
+El modelo presenta un coeficiente de determinación (R² = 0.556), lo que indica que explica aproximadamente un 56% de la variabilidad de la variable objetivo (hours_mission). Este valor puede considerarse moderado, especialmente teniendo en cuenta la naturaleza heterogénea del fenómeno analizado. El MAE de 798.85 indica que, en promedio, el modelo se desvía en aproximadamente 799 horas respecto al valor real, mientras que el RMSE de 1167.06 sugiere la existencia de errores grandes en algunos casos, penalizando más fuertemente las predicciones extremas. Esto es consistente con la alta dispersión y presencia de outliers en la variable objetivo, lo que impacta especialmente en el RMSE al penalizar más fuertemente los errores grandes.
 
 ---
 
 ## Ejercicio 3 — Regresión Lineal Múltiple en NumPy
 
 ---
-Añade aqui tu descripción y analisis:
+El modelo no “aprende” en el sentido abstracto, sino que resuelve un problema matemático concreto mediante álgebra lineal. La estimación de los coeficientes se obtiene a través de una solución cerrada que minimiza el error cuadrático, lo que permite entender con claridad qué está ocurriendo internamente.
 
+La regresión lineal múltiple es una herramienta que permite estimar relaciones entre variables en presencia de incertidumbre. Su objetivo no es predecir perfectamente los valores observados, sino aproximar la estructura subyacente de los datos, reconociendo que siempre existirá una componente de variabilidad que no puede ser explicada por el modelo.
 ---
 
 **Pregunta 3.1** — Explica en tus propias palabras qué hace la fórmula β = (XᵀX)⁻¹ Xᵀy y por qué es necesario añadir una columna de unos a la matriz X.
 
-> La fórmula β = (XᵀX)⁻¹ Xᵀy determina la combinación de coeficientes β que hace que mis predicciones se parezcan lo más posible a y. Es análogo a lo que hacíamos en la regresión lineal simple cuando minimizábamos la suma de los errores al cuadrado, pero con más de una variable independiente.
+La fórmula β = (XᵀX)⁻¹ Xᵀy determina la combinación de coeficientes β que hace que mis predicciones se parezcan lo más posible a y. Es análogo a lo que hacíamos en la regresión lineal simple cuando minimizábamos la suma de los errores al cuadrado, pero con más de una variable independiente.
 Es necesario añadir una columna de unos porque permite aprender el intercepto. Si no la agregamos, estaríamos forzando que el modelo pase por el origen (0,0).
 
 **Pregunta 3.2** — Copia aquí los cuatro coeficientes ajustados por tu función y compáralos con los valores de referencia del enunciado.
@@ -214,35 +214,58 @@ Es necesario añadir una columna de unos porque permite aprender el intercepto. 
 | β₂        | -1.0      | -1.117038      |
 | β₃        | 0.5       | 0.438517       |
 
-> Los cuatro coeficientes ajustados por mi función son similares a los de referencia, pero no exactamente iguales debido al ruido (por eso tenemos un R2 de ≈ 0.69 y no de 1). Si lo quitaramos nos darían los mismos resultados.
+Los cuatro coeficientes ajustados por mi función son similares a los de referencia, pero no exactamente iguales debido al ruido (por eso tenemos un R2 de ≈ 0.69 y no de 1). Si lo quitaramos nos darían los mismos resultados.
 
 **Pregunta 3.3** — ¿Qué valores de MAE, RMSE y R² has obtenido? ¿Se aproximan a los de referencia?
 
-> He obtenido un MAE de 1.166462, un RMSE de 1.461243 y un R² de 0.689672. Para el MAE y el RMSE se encuentran dentro del margen de referencia, pero el R² se encuentra por afuera: ± 0.1. 
+He obtenido un MAE de 1.166462, un RMSE de 1.461243 y un R² de 0.689672. Para el MAE y el RMSE se encuentran dentro del margen de referencia, pero el R² se encuentra por afuera: ± 0.1. 
 
 ---
 
 ## Ejercicio 4 — Series Temporales
 ---
-Añade aqui tu descripción y analisis:
+El modelo aditivo funciona: La descomposición logra separar con éxito tendencia, estacionalidad y ruido, lo que indica que los componentes se suman de forma independiente y que la amplitud de la estacionalidad no varía con el nivel de la serie (si lo hiciera, sería más apropiado un modelo multiplicativo).
+La serie es predecible en su estructura: La tendencia lineal y la estacionalidad anual son componentes deterministas y estables, lo que significa que un modelo relativamente sencillo (por ejemplo, una regresión con términos de Fourier o un SARIMA) sería capaz de capturar la mayor parte del comportamiento futuro de la serie.
+
+El residuo es "buen ruido": El hecho de que el residuo sea gaussiano, estacionario y sin autocorrelación significa que el modelo de descomposición no ha dejado ningún patrón sin explicar. No hay información oculta que un modelo más complejo pudiera aprovechar. Esto es exactamente lo que se busca en cualquier análisis de series temporales: que lo que quede sin explicar sea puro azar.
+La limitación principal es que la descomposición clásica con seasonal_decompose no separa explícitamente el ciclo de largo plazo (~4 años) de la tendencia, fusionando ambos en la componente de tendencia.
+
+El PACF del residuo tiene exactamente el mismo aspecto que el ACF: solo el lag 0 es significativo y todo lo demás está dentro de las bandas de confianza. Esto confirma que el residuo no tiene ninguna estructura autorregresiva, es decir, no hay ningún lag pasado que ayude a predecir el valor actual. Es la firma de un ruido blanco puro, lo cual es exactamente lo que se esperaba.
+
+En resumen: la serie es un ejemplo casi ideal de comportamiento estocástico bien estructurado, donde la señal y el ruido están claramente separados. El ACF del residuo funciona como una prueba de que la descomposición fue exitosa: si todos los lags están dentro de las bandas de confianza, significa que ni la tendencia ni la estacionalidad dejaron huella en lo que queda.
 
 ---
 
 **Pregunta 4.1** — ¿La serie presenta tendencia? Descríbela brevemente (tipo, dirección, magnitud aproximada).
 
-> _Escribe aquí tu respuesta_
+Sí, la serie presenta una tendencia lineal creciente. En la gráfica de descomposición se aprecia claramente una recta ascendente que va desde aproximadamente 67 en enero de 2018 hasta 155 en diciembre de 2023, lo que supone un incremento de unas 88 unidades en 6 años (~14,7 unidades/año). Esto se corresponde exactamente con el parámetro de generación: tendencia = 0.05 * t + 50, que acumula 0,05 unidades por día.
+
+La conexión con el ACF es indirecta pero importante: si la tendencia no hubiera sido bien extraída, el residuo seguiría conteniendo una deriva, y el ACF del residuo mostraría autocorrelaciones significativas que decaen muy lentamente hacia cero (el patrón típico de una serie no estacionaria). Sin embargo, el ACF del residuo cae prácticamente a cero desde el lag 1, lo que confirma que la tendencia fue eliminada correctamente. El test ADF lo ratifica con p-value = 0.00.
 
 **Pregunta 4.2** — ¿Hay estacionalidad? Indica el periodo aproximado en días y la amplitud del patrón estacional.
 
-> _Escribe aquí tu respuesta_
+Sí, existe una estacionalidad clara con periodo de 365 días (anual), visible tanto en la serie original como en el componente estacional de la descomposición. El patrón es de tipo senoidal, con picos en torno a +10/+11 unidades y valles de hasta −21 unidades respecto al nivel de tendencia, lo que da una amplitud total de aproximadamente 32 unidades. Esto se corresponde con la combinación de seno y coseno del código (15*sin + 6*cos).
+
+Si hubiera calculado el ACF sobre la serie original sin descomponer, se verían picos significativos en los lags 365, 730, 1095... (múltiplos del periodo estacional), que son la firma característica de la estacionalidad anual. En cambio, el ACF del residuo que sí se ve en la imagen no muestra ningún pico en esos lags, lo que demuestra que la estacionalidad fue completamente absorbida por la descomposición y no quedó ningún patrón estacional sin explicar en el residuo.
 
 **Pregunta 4.3** — ¿Se aprecian ciclos de largo plazo en la serie? ¿Cómo los diferencias de la tendencia?
 
-> _Escribe aquí tu respuesta_
+Sí. Además de la tendencia lineal, la serie incorpora un ciclo de largo plazo de periodo ~4 años (≈1461 días) con amplitud de 8 unidades. En la gráfica de la serie original se pueden intuir ondulaciones suaves que modulan la tendencia (por ejemplo, la ralentización aparente hacia 2020 y la aceleración posterior). 
+
+La diferencia clave con la tendencia es que el ciclo es oscilatorio —sube y baja de forma periódica— mientras que la tendencia es monotónicamente creciente. La descomposición clásica con period=365 no los separa explícitamente: el ciclo queda absorbido parcialmente en la tendencia extraída por la media móvil, razón por la que la componente de tendencia no es perfectamente rectilínea.
 
 **Pregunta 4.4** — ¿El residuo se ajusta a un ruido ideal? Indica la media, la desviación típica y el resultado del test de normalidad (p-value) para justificar tu respuesta.
 
-> _Escribe aquí tu respuesta_
+Sí, el residuo se ajusta muy bien a un ruido blanco gaussiano ideal. Los estadísticos lo confirman:
+
+Media ≈ 0.13 (cercano a cero, sin sesgo sistemático).
+Desviación típica ≈ 3.22, próxima al σ=3.5 con el que se generó el ruido (la ligera diferencia se debe a que parte de la varianza queda en la tendencia extraída).
+Asimetría ≈ −0.05 y curtosis ≈ −0.06, ambas muy cercanas a 0, indicando una distribución prácticamente simétrica y mesocúrtica.
+Test de Jarque-Bera: estadístico = 1.10, p-value = 0.58 >> 0.05 → no se rechaza la hipótesis de normalidad.
+Test ADF: p-value = 0.00 → el residuo es estacionario (sin raíz unitaria).
+Los gráficos ACF y PACF muestran todas las autocorrelaciones dentro de las bandas de confianza para lags > 0, lo que confirma ausencia de estructura temporal en el residuo.
+
+Por lo tanto, el residuo cumple todas las propiedades del ruido ideal: media nula, distribución normal, varianza constante y ausencia de autocorrelación.
 
 ---
 

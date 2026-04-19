@@ -1,0 +1,15 @@
+ANÁLISIS DEL RESIDUO
+====================
+
+Media: 0.1271
+Std: 3.2220
+Asimetría: -0.0509
+Curtosis: -0.0610
+
+Test Jarque-Bera
+Estadístico: 1.1013
+p-value: 0.5766
+
+Test ADF
+Estadístico: -39.9160
+p-value: 0.0000
